@@ -117,8 +117,11 @@ function render() {
     "It maps the Cursor names in pstack skills to Claude Code.";
   for (const [skill, { wrap }] of classes) {
     const path = `skills/${skill}/SKILL.md`;
-    const text = files.get(path).bytes.toString("utf8");
-    if (wrap) files.get(path).bytes = Buffer.from(text.replace(/^(# .*)\n+/m, `$1\n\n${line}\n\n`));
+    // Claude Code turns `name` into the slash command, which cannot hold a space,
+    // so the tree uses the folder name and Cursor keeps the display name.
+    let text = files.get(path).bytes.toString("utf8").replace(/^name: .*$/m, `name: ${skill}`);
+    if (wrap) text = text.replace(/^(# .*)\n+/m, `$1\n\n${line}\n\n`);
+    files.get(path).bytes = Buffer.from(text);
   }
   files.set("LICENSE", file(join(PSTACK, "LICENSE")));
   for (const manifest of MANIFESTS) files.set(manifest, file(join(PSTACK, "plugin.json")));
